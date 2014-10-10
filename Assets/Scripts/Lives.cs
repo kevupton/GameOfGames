@@ -2,6 +2,7 @@
 using System.Collections;
 
 public class Lives : MonoBehaviour {
+	public int lives = 10;
 
 	// Use this for initialization
 	void Start () {
