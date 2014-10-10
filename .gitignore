@@ -3,3 +3,5 @@ Library/*
 Temp/*
 ProjectSettings/*
 *.meta
+*.csproj
+*.sln

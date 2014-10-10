@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class WallScript : MonoBehaviour {
+public class Boundary : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
