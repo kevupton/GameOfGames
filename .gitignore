@@ -5,3 +5,4 @@ ProjectSettings/*
 *.meta
 *.csproj
 *.sln
+*.userprefs
