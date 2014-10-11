@@ -17,6 +17,8 @@ public class PathFinder : MonoBehaviour {
 	private List<PathCreator.Node> ClosedNodes = new List<PathCreator.Node> ();
 	private PathCreator pathCreator;
 
+	public float drag = 1.0f;
+
 	private PathCreator.Node[] pathway = new PathCreator.Node[0];
 
 	public float refreshTime = 1.0f;
@@ -43,11 +45,12 @@ public class PathFinder : MonoBehaviour {
 	}
 
 	void ApplyMotion() {
+		rigidbody2D.drag = drag;
 		if (pathway.Length > 0) {
 			PathCreator.Node node = pathway [0];
-			Collider[] objects = Physics.OverlapSphere (pathway [0].GetLocation (), pathway[0].GetSize().x / 2);
+			Collider2D[] objects = Physics2D.OverlapCircleAll (pathway [0].GetLocation (), pathway[0].GetSize().x / 2);
 
-			foreach (Collider obj in objects) {
+			foreach (Collider2D obj in objects) {
 				if (obj.transform == transform) {
 					for (int i = 0; i < (pathway.Length - 1); i++) {
 						pathway[i] = pathway[i + 1];
@@ -57,10 +60,9 @@ public class PathFinder : MonoBehaviour {
 				}
 			}
 		} 
+
 		if (pathway.Length > 0) {
-			rigidbody.velocity = ((Vector3) pathway[0].GetLocation() - transform.position).normalized * speed;
-		} else {
-			rigidbody.velocity = Vector3.zero;
+			rigidbody2D.AddForce(((Vector3) pathway[0].GetLocation() - transform.position).normalized * speed);
 		}
 	}
 
@@ -98,7 +100,7 @@ public class PathFinder : MonoBehaviour {
 			}
 			if (OpenNodes.Contains(endNode)) {
 				pathFound = true;
-				CreatePathway(smallest);
+				CreatePathway(endNode);
 			}
 		}
 	}
@@ -113,13 +115,14 @@ public class PathFinder : MonoBehaviour {
 
 			GUI.backgroundColor = Color.green;
 			foreach (PathCreator.Node n in OpenNodes) {
+				if (Array.IndexOf(pathway, n) != -1) GUI.backgroundColor = Color.grey;
 				if (n == endNode) GUI.backgroundColor = Color.yellow;
 				pos = Camera.main.WorldToScreenPoint(new Vector3(n.GetLocation().x - sizea.x/2, -n.GetLocation().y - sizea.y/2));
 				if (GUI.Button (new Rect (pos.x, pos.y, sizeb.x, sizeb.y), "")) {
 					Debug.Log ("F: " + n.F + " H:" + n.H + " G:" + n.G + " X:" + n.GetNodeList().GetNodePos(n).x +
 					           " Y:" + n.GetNodeList().GetNodePos(n).y);
 				}
-				if (n == endNode) GUI.backgroundColor = Color.green;
+				if (n == endNode || Array.IndexOf(pathway, n) != -1) GUI.backgroundColor = Color.green;
 			}
 
 			GUI.backgroundColor = Color.red;
