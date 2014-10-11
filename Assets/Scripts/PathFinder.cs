@@ -36,7 +36,13 @@ public class PathFinder : MonoBehaviour {
 	void Update () {
 		if (!pathFound && Input.GetMouseButton(1)) {
 			GetPath ();
+		} else if (pathFound) {
+			ApplyMotion();
 		}
+	}
+
+	void ApplyMotion() {
+		PathCreator.Node node = pathway [0];
 	}
 
 	void GetPath() {
