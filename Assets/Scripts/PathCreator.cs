@@ -222,8 +222,12 @@ public class PathCreator : MonoBehaviour {
 		public Node GetNodeAtPos(Vector2 v) {
 			int x = (int)v.x;
 			int y = (int)v.y;
+
 			int key = (int) (count.x * y + x);
-			
+			if (key > nodeList.Count || key < 0) {
+				Debug.Log (v);
+				Debug.Log (key);
+			}
 			return nodeList[key];
 		}
 		

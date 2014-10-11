@@ -8,6 +8,7 @@ public class PathFinder : MonoBehaviour {
 	public bool pathFound = false;
 
 	public bool drawButtons = true;
+	public float speed = 1.5f;
 
 	private PathCreator.Node startNode;
 	private PathCreator.Node endNode;
@@ -42,7 +43,25 @@ public class PathFinder : MonoBehaviour {
 	}
 
 	void ApplyMotion() {
-		PathCreator.Node node = pathway [0];
+		if (pathway.Length > 0) {
+			PathCreator.Node node = pathway [0];
+			Collider[] objects = Physics.OverlapSphere (pathway [0].GetLocation (), pathway[0].GetSize().x / 2);
+
+			foreach (Collider obj in objects) {
+				if (obj.transform == transform) {
+					for (int i = 0; i < (pathway.Length - 1); i++) {
+						pathway[i] = pathway[i + 1];
+					}
+					Array.Resize(ref pathway, pathway.Length -1);
+					break;
+				}
+			}
+		} 
+		if (pathway.Length > 0) {
+			rigidbody.velocity = ((Vector3) pathway[0].GetLocation() - transform.position).normalized * speed;
+		} else {
+			rigidbody.velocity = Vector3.zero;
+		}
 	}
 
 	void GetPath() {
@@ -61,10 +80,7 @@ public class PathFinder : MonoBehaviour {
 			PathCreator.Node smallest = null;
 
 			foreach (PathCreator.Node n in OpenNodes) {
-				if (smallest == endNode) {
-					pathFound = true;
-					CreatePathway(smallest);
-				} else {
+				if (smallest != endNode) {
 					if (smallest == null) {
 						smallest = n;
 					} else {
@@ -73,11 +89,16 @@ public class PathFinder : MonoBehaviour {
 						}
 					}
 				}
+
 			}
 			if (smallest != null && !pathFound) {
 				OpenNodes.Remove(smallest);
 				ClosedNodes.Add(smallest);
 				GetChildren(smallest);
+			}
+			if (OpenNodes.Contains(endNode)) {
+				pathFound = true;
+				CreatePathway(smallest);
 			}
 		}
 	}
@@ -95,7 +116,8 @@ public class PathFinder : MonoBehaviour {
 				if (n == endNode) GUI.backgroundColor = Color.yellow;
 				pos = Camera.main.WorldToScreenPoint(new Vector3(n.GetLocation().x - sizea.x/2, -n.GetLocation().y - sizea.y/2));
 				if (GUI.Button (new Rect (pos.x, pos.y, sizeb.x, sizeb.y), "")) {
-					Debug.Log (n.F + " " + n.H + " " + n.G);
+					Debug.Log ("F: " + n.F + " H:" + n.H + " G:" + n.G + " X:" + n.GetNodeList().GetNodePos(n).x +
+					           " Y:" + n.GetNodeList().GetNodePos(n).y);
 				}
 				if (n == endNode) GUI.backgroundColor = Color.green;
 			}
@@ -107,7 +129,8 @@ public class PathFinder : MonoBehaviour {
 				pos = Camera.main.WorldToScreenPoint(new Vector3(n.GetLocation().x - sizea.x/2, -n.GetLocation().y - sizea.y/2));
 				//Debug.Log (new Vector3(n.GetLocation().x - sizea.x/2, n.GetLocation().y + sizea.y/2) + " " + pos);
 				if (GUI.Button (new Rect (pos.x, pos.y, sizeb.x, sizeb.y), "")) {
-					Debug.Log (n.F + " " + n.H + " " + n.G);
+					Debug.Log ("F: " + n.F + " H:" + n.H + " G:" + n.G + " X:" + n.GetNodeList().GetNodePos(n).x +
+					           " Y:" + n.GetNodeList().GetNodePos(n).y);
 				}
 				if (n == startNode || Array.IndexOf(pathway, n) != -1) GUI.backgroundColor = Color.red;
 			}
@@ -164,17 +187,11 @@ public class PathFinder : MonoBehaviour {
 						} else if (xPos.x == iPos.x || xPos.y == iPos.y) {
 							for (int z = i + 1; z < x; z++) {
 								keys.Add(z);
-								if (xPos.x == iPos.x) {
-									yp = (int) ((iPos.y < xPos.y)? z - i + iPos.y: iPos.y - (z - i));
-									newPos = new Vector2(iPos.x, yp);
-								} else {
-									xp = (int) ((iPos.x < xPos.x)? z - i + iPos.x: iPos.x - (z - i));
-									newPos = new Vector2(xp, iPos.y);
-								}
-								if (nodeI.GetNodeList().GetNodeAtPos(newPos).IsBoundary()) {
-									isWall = true;
-									cont = false;
-								}
+							}
+							
+							if (ContainsWallInBetween(nodeI, nodeX)) {
+								isWall = true;
+								cont = false;
 							}
 							if (!isWall) {
 								curp = 0;
@@ -198,4 +215,21 @@ public class PathFinder : MonoBehaviour {
 		}
 	}
 
+	bool ContainsWallInBetween(PathCreator.Node node1, PathCreator.Node node2) {
+		Vector2 pos1 = node1.GetNodeList ().GetNodePos (node1);
+		Vector2 pos2 = node1.GetNodeList ().GetNodePos (node2);
+		bool wall = false;
+		Vector2 diff = pos1 - pos2;
+		Vector2 newPos;
+		for (int z = 1; z <= Math.Abs(diff.x + diff.y); z++) {
+			if (diff.x == 0) {
+				newPos = new Vector2(pos1.x, ((pos1.y < pos2.y)? pos1.y + z: pos1.y - z));
+			} else {
+				newPos = new Vector2(((pos1.x < pos2.x)? pos1.x + z: pos1.x - z), pos1.y);
+			}
+			if (node1.GetNodeList().GetNodeAtPos(newPos).IsBoundary()) return true;
+		}
+
+		return wall;
+	}
 }
