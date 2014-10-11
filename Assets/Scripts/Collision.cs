@@ -14,7 +14,7 @@ public class Collision : MonoBehaviour {
 	}
 
 	void OnCollisionEnter2D(Collision2D e) {
-		Debug.Log (e.relativeVelocity);
+		//Debug.Log (e.relativeVelocity);
 	}
 
 	void OnTriggerEnter2D(Collider2D obj) {
