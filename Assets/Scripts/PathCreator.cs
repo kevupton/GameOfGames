@@ -231,7 +231,7 @@ public class PathCreator : MonoBehaviour {
 			return nodeList[key];
 		}
 		
-		Node GetClosestNode(Transform obj) {
+		public Node GetClosestNode(Transform obj) {
 			int x = (int) Math.Round((obj.position.x - start.x) / size.x);
 			int y = (int) Math.Round((start.y - obj.position.y) / size.y);
 			return GetNodeAtPos (new Vector2 (x, y));
